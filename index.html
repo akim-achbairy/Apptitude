@@ -147,10 +147,14 @@ nav.hide{ transform: translateY(-100%); }
 .mcta{ position:fixed; left:0; right:0; bottom:0; z-index:95;
   display:none; align-items:center; justify-content:space-between; gap:.8rem;
   padding: .65rem var(--gutter) calc(.65rem + env(safe-area-inset-bottom));
-  background: var(--nav-bg); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  /* fond plus opaque => moins de dépendance au flou (flou = repaint coûteux en scroll mobile) */
+  background: rgba(243,239,232,.94); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   border-top:1px solid var(--hairline);
-  transform: translateY(110%); transition: transform .45s ease; }
-.mcta.on{ transform: translateY(0); }
+  /* translate3d + will-change => la barre vit sur sa propre couche GPU, le scroll ne la repeint plus */
+  transform: translate3d(0,110%,0);
+  transition: transform .4s cubic-bezier(.22,1,.36,1);
+  will-change: transform; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.mcta.on{ transform: translate3d(0,0,0); }
 .mcta-price b{ font-family: var(--f-display); font-size: 1.15rem; font-weight:400; letter-spacing:.04em; line-height:1.1; }
 .mcta-price span{ display:block; font-family: var(--f-mono); font-size:.52rem; letter-spacing:.18em; text-transform:uppercase; color: var(--fg-ash); }
 .mcta .btn{ padding:.8rem 1.4rem; font-size:.7rem; }
@@ -642,12 +646,6 @@ footer{
   <div class="l-count">00</div>
   <div class="l-bar"></div>
 </div>
-
-<!-- NAV -->
-<nav id="nav">
-  <a href="#hero" class="nav-logo" data-hover>APPTITUDE</a>
-  <a class="nav-cta" data-hover href="https://whop.com/checkout/plan_O3W0wesAoC90O" target="_blank" rel="noopener">Rejoindre →</a>
-</nav>
 
 <!-- STICKY MOBILE CTA -->
 <div class="mcta" id="mcta" aria-hidden="false">
@@ -1659,20 +1657,6 @@ if(fine && !reduced){
 } else {
   document.body.style.cursor = 'auto';
 }
-
-/* nav hide on scroll down */
-(function(){
-  var nav = document.getElementById('nav');
-  var last = 0;
-  ScrollTrigger.create({
-    start: 0, end: 'max',
-    onUpdate: function(self){
-      var y = self.scroll();
-      nav.classList.toggle('hide', y > 140 && y > last);
-      last = y;
-    }
-  });
-})();
 
 /* sticky mobile CTA: visible after the hero, hidden over the buy section */
 (function(){
